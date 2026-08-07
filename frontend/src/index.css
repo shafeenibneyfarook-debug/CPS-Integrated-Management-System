@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #1c2433;
+  background: #1f1f1f;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: #1f1f1f;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #1f1f1f;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+@layer components {
+  .page-shell {
+    @apply min-h-screen bg-cps-charcoal p-3 md:p-5;
+  }
+
+  .app-frame {
+    @apply mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-[1680px] overflow-hidden bg-white shadow-panel;
+  }
+
+  .section-title {
+    @apply text-2xl font-extrabold tracking-tight text-cps-ink md:text-3xl;
+  }
+
+  .section-subtitle {
+    @apply mt-1 text-sm font-semibold text-slate-600;
+  }
+
+  .primary-btn {
+    @apply inline-flex min-h-11 items-center justify-center rounded-sm bg-cps-deepBlue px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2;
+  }
+
+  .purple-btn {
+    @apply inline-flex min-h-11 items-center justify-center rounded-sm bg-cps-purple px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2;
+  }
+
+  .secondary-btn {
+    @apply inline-flex min-h-11 items-center justify-center rounded-sm border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-sm font-bold text-slate-700;
+  }
+
+  .field-control {
+    @apply h-11 w-full rounded-sm border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100;
+  }
+
+  .field-control-gray {
+    @apply h-11 w-full rounded-sm border-0 bg-slate-100 px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-500 focus:bg-white focus:ring-2 focus:ring-slate-300;
+  }
+
+  .table-head {
+    @apply bg-neutral-200 text-left text-sm font-extrabold text-neutral-900;
+  }
+
+  .table-cell {
+    @apply px-3 py-3 text-sm text-slate-800;
+  }
+
+  .stat-card {
+    @apply min-h-[74px] bg-neutral-200 px-5 py-3 text-left text-lg font-extrabold leading-tight text-neutral-900;
+  }
+
+  .soft-panel {
+    @apply rounded-sm bg-neutral-200 p-5;
+  }
+}

@@ -1,6 +1,8 @@
 # get link from terminal commands
 cd frontend
+
 npm install (first time only)
+
 npm run dev
 
 

@@ -5,6 +5,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const mongoose = require("mongoose");
 const connectDB = require("./config/db");
 
 // ======================================================
@@ -63,6 +64,14 @@ app.use("/api/dashboard", authenticate, dashboardRoutes);
 // Health Check
 app.get("/", (req, res) => {
     res.send("CPS Management System Backend Running");
+});
+
+app.get("/api/health", (req, res) => {
+    res.json({
+        status: "ok",
+        database: mongoose.connection.name,
+        databaseState: mongoose.connection.readyState === 1 ? "connected" : "disconnected"
+    });
 });
 
 const PORT = process.env.PORT || 5000;

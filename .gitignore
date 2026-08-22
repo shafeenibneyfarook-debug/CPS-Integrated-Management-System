@@ -1,0 +1,16 @@
+node_modules/
+**/node_modules/
+
+.env
+.env.*
+!.env.example
+server/.env
+
+# Build output
+client/dist/
+dist/
+build/
+
+# OS and local logs
+.DS_Store
+*.log

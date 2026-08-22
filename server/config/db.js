@@ -1,23 +1,23 @@
 const mongoose = require("mongoose");
 
 const connectDB = async () => {
-    try {
-        if (!process.env.MONGO_URI) {
-            console.error("⚠️ MONGO_URI is missing in server/.env");
-            return;
-        }
+    if (!process.env.MONGO_URI) {
+        throw new Error("MONGO_URI is not configured");
+    }
 
+    if (mongoose.connection.readyState === 1) return mongoose.connection;
+
+    try {
         await mongoose.connect(process.env.MONGO_URI, {
             serverSelectionTimeoutMS: 5000
         });
 
         console.log("MongoDB Connected");
         console.log("Database Name:", mongoose.connection.name);
+        return mongoose.connection;
     } catch (error) {
         console.error("MongoDB Connection Error:", error.message);
-        if (error.message.includes("bad auth") || error.message.includes("authentication failed")) {
-            console.error("👉 Check your MongoDB Atlas credentials (username/password) in server/.env");
-        }
+        throw error;
     }
 };
 

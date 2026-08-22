@@ -184,6 +184,8 @@ The following routers are registered in `server/server.js`:
 | `/api/product-recommendations` | `productRecommendation` | Product recommendations and price alerts |
 | `/api/dashboard` | `dashboard` | Dashboard statistics and recent activities |
 
+`GET /api/health` is an unauthenticated deployment check. It reports the MongoDB database name and connection state after the Vercel adapter has initialized the database connection. Use it to confirm that Vercel is using the same database that contains the existing users.
+
 All prefixes except `/api/auth` and `/api/admin` are mounted with the global `authenticate` middleware in `server/server.js`. Individual routers may apply `authenticate` again and use `authorize(...)` for role-specific actions. The admin router applies both authentication and the `admin` role check to all of its routes.
 
 ### Authentication and authorization flow

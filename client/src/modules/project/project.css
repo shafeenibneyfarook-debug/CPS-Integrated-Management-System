@@ -1,0 +1,739 @@
+/* ==========================================
+   PROJECT PAGE MAIN STYLE
+========================================== */
+
+
+.project-page,
+.project-details-page {
+
+
+    padding: 40px;
+
+
+    background: #f8fafc;
+
+
+    min-height: 100vh;
+
+
+}
+
+
+
+
+
+
+/* ==========================================
+   PROJECT LIST HEADER
+========================================== */
+
+
+.page-header {
+
+
+    display: flex;
+
+
+    justify-content: space-between;
+
+
+    align-items: center;
+
+
+    margin-bottom: 25px;
+
+
+}
+
+
+
+.page-header h1 {
+
+
+    font-size: 45px;
+
+
+    color: #0f172a;
+
+
+}
+
+
+
+
+
+
+
+.page-header button {
+
+
+    background: #1e3a8a;
+
+
+    color: white;
+
+
+    border: none;
+
+
+    padding: 12px 22px;
+
+
+    border-radius: 8px;
+
+
+    cursor: pointer;
+
+
+    font-size: 16px;
+
+
+}
+
+
+
+.page-header button:hover {
+
+
+    background: #172554;
+
+
+}
+
+
+
+
+
+
+
+
+/* ==========================================
+   SEARCH BOX
+========================================== */
+
+
+.search-box {
+
+
+    width: 280px;
+
+
+    padding: 10px;
+
+
+    margin-bottom: 25px;
+
+
+    border-radius: 8px;
+
+
+    border: 1px solid #cbd5e1;
+
+
+}
+
+
+
+
+
+
+
+
+
+/* ==========================================
+   PROJECT TABLE
+========================================== */
+
+
+table {
+
+
+    width: 100%;
+
+
+    border-collapse: collapse;
+
+
+    background: white;
+
+
+    border-radius: 15px;
+
+
+    overflow: hidden;
+
+
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+
+
+}
+
+
+
+
+th {
+
+
+    background: #1e293b;
+
+
+    color: white;
+
+
+    padding: 15px;
+
+
+    text-align: center;
+
+
+}
+
+
+
+
+
+td {
+
+
+    padding: 15px;
+
+
+    text-align: center;
+
+
+    color: #475569;
+
+
+    border-bottom: 1px solid #e2e8f0;
+
+
+}
+
+
+
+
+
+
+td a {
+
+
+    color: #2563eb;
+
+
+    font-weight: 600;
+
+
+    text-decoration: none;
+
+
+}
+
+
+
+td a:hover {
+
+
+    text-decoration: underline;
+
+
+}
+
+
+
+
+
+
+
+/* ==========================================
+   BUTTONS
+========================================== */
+
+
+td button {
+
+
+    padding: 8px 14px;
+
+
+    margin: 3px;
+
+
+    border-radius: 6px;
+
+
+    border: none;
+
+
+    cursor: pointer;
+
+
+}
+
+
+
+
+
+td button:first-child {
+
+
+    background: #2563eb;
+
+
+    color:white;
+
+
+}
+
+
+
+
+
+
+td button:last-child {
+
+
+    background:#dc2626;
+
+
+    color:white;
+
+
+}
+
+
+
+
+
+
+
+
+
+
+/* ==========================================
+   PROJECT DETAILS PAGE
+========================================== */
+
+
+
+.project-details-page h1 {
+
+
+    text-align:center;
+
+
+    font-size:45px;
+
+
+    color:#0f172a;
+
+
+    margin-bottom:30px;
+
+
+}
+
+
+
+
+
+
+
+.details-card {
+
+
+    background:white;
+
+
+    width:80%;
+
+
+    margin:auto;
+
+
+    padding:35px;
+
+
+    border-radius:20px;
+
+
+    box-shadow:0 8px 25px rgba(0,0,0,0.1);
+
+
+}
+
+
+
+
+
+
+.details-card h2 {
+
+
+    text-align:center;
+
+
+    font-size:32px;
+
+
+    color:#1e3a8a;
+
+
+    margin-bottom:30px;
+
+
+}
+
+
+
+
+
+
+
+
+.details-grid {
+
+
+    display:grid;
+
+
+    grid-template-columns:repeat(2,1fr);
+
+
+    gap:25px;
+
+
+}
+
+
+
+
+
+
+.details-grid p {
+
+
+    background:#f1f5f9;
+
+
+    padding:18px;
+
+
+    border-radius:12px;
+
+
+    color:#475569;
+
+
+    font-size:17px;
+
+
+}
+
+
+
+
+
+
+.details-grid b {
+
+
+    color:#0f172a;
+
+
+    font-size:18px;
+
+
+}
+
+
+
+
+
+
+
+/* ==========================================
+   DESCRIPTION BOX
+========================================== */
+
+
+.description-box {
+
+
+    margin-top:30px;
+
+
+    background:#f1f5f9;
+
+
+    padding:20px;
+
+
+    border-radius:12px;
+
+
+}
+
+
+
+
+
+.description-box b {
+
+
+    font-size:20px;
+
+
+    color:#0f172a;
+
+
+}
+
+
+
+
+
+.description-box p {
+
+
+    color:#475569;
+
+
+    margin-top:10px;
+
+
+}
+/* ==========================================
+   MODAL OVERLAY
+========================================== */
+
+
+.modal-overlay {
+
+    position: fixed;
+
+    top: 0;
+
+    left: 0;
+
+    width: 100%;
+
+    height: 100%;
+
+    background: rgba(15, 23, 42, 0.65);
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    z-index: 9999;
+
+}
+
+
+
+
+/* ==========================================
+   MODAL BOX
+========================================== */
+
+
+.project-modal {
+
+
+    width: 550px;
+
+
+    background: white;
+
+
+    padding: 35px;
+
+
+    border-radius: 20px;
+
+
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+
+
+}
+
+
+
+
+
+
+.project-modal h2 {
+
+
+    text-align: center;
+
+
+    color: #1e293b;
+
+
+    font-size: 30px;
+
+
+    margin-bottom: 25px;
+
+
+}
+
+
+
+
+
+
+.project-modal form {
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    gap:15px;
+
+
+}
+
+
+
+
+
+
+.project-modal input,
+
+
+.project-modal select,
+
+
+.project-modal textarea {
+
+
+    width:100%;
+
+
+    padding:12px;
+
+
+    border-radius:8px;
+
+
+    border:1px solid #cbd5e1;
+
+
+    font-size:16px;
+
+
+}
+
+
+
+
+
+
+.project-modal textarea {
+
+
+    height:100px;
+
+
+}
+
+
+
+
+
+
+
+.project-modal button {
+
+
+    padding:12px;
+
+
+    border:none;
+
+
+    border-radius:8px;
+
+
+    background:#2563eb;
+
+
+    color:white;
+
+
+    cursor:pointer;
+
+
+    font-size:16px;
+
+
+}
+
+
+
+
+
+
+.project-modal button:last-child {
+
+
+    background:#64748b;
+
+
+}
+
+/* ==========================================
+   STATUS BADGES
+========================================== */
+.status {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.status.delivered {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #86efac;
+}
+
+.status.manager.approved,
+.status.manager-approved {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #93c5fd;
+}
+
+.status.awaiting.finance.clearance,
+.status.awaiting-finance-clearance {
+    background: #f3e8ff;
+    color: #6b21a8;
+    border: 1px solid #d8b4fe;
+}
+
+.status.completed {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.status.running {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.status.pending {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}

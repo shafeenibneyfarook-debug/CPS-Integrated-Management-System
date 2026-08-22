@@ -1,0 +1,42 @@
+.client-page { color: #172033; text-align: left; }
+.client-page-header { display: flex; justify-content: space-between; gap: 24px; align-items: center; margin-bottom: 24px; }
+.client-page-header h1 { font-size: 32px; margin: 3px 0 6px; }
+.client-page-header p { color: #64748b; }
+.eyebrow { color: #2563eb !important; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.client-total { min-width: 120px; padding: 15px 20px; border-radius: 14px; background: #dbeafe; text-align: center; }
+.client-total strong, .client-total span { display: block; }
+.client-total strong { color: #1d4ed8; font-size: 25px; }
+.client-total span { color: #475569; font-size: 12px; }
+.client-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 5px 20px rgba(15, 23, 42, .05); margin-bottom: 24px; padding: 24px; }
+.client-card-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.client-card-heading h2 { margin: 3px 0 0; }
+.client-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px; }
+.client-form label, .client-filters label { color: #334155; display: flex; flex-direction: column; font-size: 13px; font-weight: 650; gap: 7px; }
+.client-form input, .client-form select, .client-form textarea, .client-filters input, .client-filters select { background: #fff; border: 1px solid #cbd5e1; border-radius: 9px; box-sizing: border-box; color: #172033; font: inherit; outline: none; padding: 10px 12px; width: 100%; }
+.client-form input:focus, .client-form select:focus, .client-form textarea:focus, .client-filters input:focus, .client-filters select:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, .12); }
+.full-width { grid-column: 1 / -1; }
+.form-actions { display: flex; justify-content: flex-end; }
+.button { border: 0; border-radius: 8px; cursor: pointer; font-weight: 650; padding: 9px 14px; }
+.button:disabled { cursor: wait; opacity: .6; }
+.button.primary { background: #2563eb; color: #fff; min-width: 130px; }
+.button.ghost { background: #eef2f7; color: #334155; }
+.button.edit { background: #dbeafe; color: #1d4ed8; }
+.button.danger { background: #fee2e2; color: #b91c1c; }
+.client-alert { align-items: center; border-radius: 10px; display: flex; justify-content: space-between; margin-bottom: 16px; padding: 11px 14px; }
+.client-alert.success { background: #dcfce7; color: #166534; }
+.client-alert.error { background: #fee2e2; color: #991b1b; }
+.client-alert button { background: transparent; border: 0; color: inherit; cursor: pointer; font-size: 20px; }
+.client-filters { align-items: end; display: grid; gap: 12px; grid-template-columns: minmax(220px, 1fr) 170px 170px auto; margin-bottom: 18px; }
+.client-table-wrap { overflow-x: auto; }
+.client-table { border-collapse: collapse; font-size: 14px; min-width: 850px; width: 100%; }
+.client-table th { background: #f8fafc; color: #64748b; font-size: 11px; letter-spacing: .06em; padding: 12px; text-align: left; text-transform: uppercase; }
+.client-table td { border-top: 1px solid #e2e8f0; color: #334155; padding: 14px 12px; vertical-align: middle; }
+.client-table td span:not(.status-badge), .client-table td strong { display: block; }
+.client-table td span:not(.status-badge) { color: #64748b; font-size: 12px; margin-top: 3px; }
+.status-badge { border-radius: 999px; display: inline-block; font-size: 12px; font-weight: 700; padding: 5px 9px; }
+.status-badge.active { background: #dcfce7; color: #166534; }
+.status-badge.inactive { background: #e2e8f0; color: #475569; }
+.row-actions { display: flex; gap: 7px; }
+.table-state { color: #64748b; padding: 35px; text-align: center; }
+@media (max-width: 850px) { .client-form { grid-template-columns: 1fr; } .full-width { grid-column: auto; } .client-filters { grid-template-columns: 1fr 1fr; } .search-field { grid-column: 1 / -1; } }
+@media (max-width: 560px) { .client-page-header { align-items: flex-start; flex-direction: column; } .client-total { box-sizing: border-box; width: 100%; } .client-filters { grid-template-columns: 1fr; } .search-field { grid-column: auto; } .client-card { padding: 17px; } }

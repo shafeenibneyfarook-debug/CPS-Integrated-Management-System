@@ -15,7 +15,11 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
  * Scrape a specific target URL using Firecrawl API v2
  */
 const scrapeUrlWithFirecrawl = async (targetUrl) => {
-    const apiKey = process.env.FIRECRAWL_API_KEY || "fc-ad1d1a321e31444c81b766519d896e31";
+    const apiKey = process.env.FIRECRAWL_API_KEY;
+
+    if (!apiKey) {
+        return { success: false, error: "FIRECRAWL_API_KEY is not configured" };
+    }
 
     try {
         const response = await fetch("https://api.firecrawl.dev/v2/scrape", {

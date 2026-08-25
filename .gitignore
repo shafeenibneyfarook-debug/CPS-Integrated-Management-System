@@ -1,0 +1,12 @@
+node_modules/
+node_modules*/
+**/node_modules/
+**/node_modules*/
+**/dist/
+**/build/
+server/.env
+.env
+.env.local
+.DS_Store
+*.log
+.vercel

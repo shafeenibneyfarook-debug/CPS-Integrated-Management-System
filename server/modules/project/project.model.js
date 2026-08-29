@@ -1,5 +1,21 @@
 const mongoose = require("mongoose");
 
+const progressPhotoSchema = new mongoose.Schema({
+    url: {
+        type: String, // Base64 data URL or external URL
+        required: [true, "Progress photo URL or Base64 is required"]
+    },
+    caption: {
+        type: String,
+        trim: true,
+        default: ""
+    },
+    uploadedAt: {
+        type: Date,
+        default: Date.now
+    }
+}, { _id: true });
+
 const progressUpdateSchema = new mongoose.Schema({
     percentage: {
         type: Number,
@@ -12,11 +28,17 @@ const progressUpdateSchema = new mongoose.Schema({
         required: [true, "Stage name is required"],
         trim: true
     },
+    monthName: {
+        type: String,
+        trim: true,
+        default: () => new Date().toLocaleString("default", { month: "long" })
+    },
     updateNotes: {
         type: String,
         trim: true,
         default: ""
     },
+    photos: [progressPhotoSchema],
     isDelayed: {
         type: Boolean,
         default: false
@@ -35,11 +57,46 @@ const progressUpdateSchema = new mongoose.Schema({
         type: [Number], // e.g. [25], [50], [75], [100]
         default: []
     },
+
+    // Verification & Approval Workflow
+    status: {
+        type: String,
+        enum: ["Pending Approval", "Approved", "Rejected"],
+        default: "Pending Approval"
+    },
+    reviewedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null
+    },
+    reviewedAt: {
+        type: Date,
+        default: null
+    },
+    managerNote: {
+        type: String,
+        trim: true,
+        default: ""
+    },
+    rejectionReason: {
+        type: String,
+        trim: true,
+        default: ""
+    },
+
     managerNotified: {
         type: Boolean,
         default: false
     },
     managerNotifiedAt: {
+        type: Date,
+        default: null
+    },
+    clientNotified: {
+        type: Boolean,
+        default: false
+    },
+    clientNotifiedAt: {
         type: Date,
         default: null
     },
@@ -159,6 +216,14 @@ const projectSchema = new mongoose.Schema({
         default: ""
     },
     totalDelayDays: {
+        type: Number,
+        default: 0
+    },
+    latestVerifiedPhoto: {
+        type: String,
+        default: ""
+    },
+    pendingProgressCount: {
         type: Number,
         default: 0
     },

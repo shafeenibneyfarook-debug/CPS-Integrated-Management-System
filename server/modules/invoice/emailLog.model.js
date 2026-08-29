@@ -11,6 +11,9 @@ const emailLogSchema = new mongoose.Schema({
             "Payment Reminder",
             "Milestone Progress Alert",
             "Project Delay Notice",
+            "Progress Photo Verification Alert",
+            "Progress Verification Rejection Alert",
+            "Client Progress Verification Notice",
             "Finance Dues Clearance Alert",
             "Project Delivery Confirmation",
             "Custom Alert"

@@ -259,9 +259,14 @@ export const deleteProject = (id) => {
     return API.delete(`/projects/${id}`);
 };
 
-// Update Project Progress & Record Delays (Logistics & Operations Officer ONLY)
+// Update Project Progress with Photo Proof (Logistics & Operations Officer ONLY)
 export const updateProjectProgress = (id, data) => {
     return API.post(`/projects/${id}/progress`, data);
+};
+
+// Manager Review & Photo Verification (Approve / Reject)
+export const reviewProgressUpdate = (id, updateId, data) => {
+    return API.post(`/projects/${id}/progress/${updateId}/review`, data);
 };
 
 // Manager Approval for 100% Completed Project

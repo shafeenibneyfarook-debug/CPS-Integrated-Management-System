@@ -1,6 +1,7 @@
 import { useState } from "react";
 import API from "../../../api/axiosConfig";
 import { useAuth } from "../authStore";
+import formatError from "../../../utils/formatError";
 import "../auth.css";
 
 export default function ProfilePage() {
@@ -94,8 +95,9 @@ export default function ProfilePage() {
             setForm((value) => ({ ...value, currentPassword: "", newPassword: "" }));
             setNotice(data.message || "Profile updated successfully!");
         } catch (requestError) {
-            setError(requestError.response?.data?.message || "Unable to update profile");
+            setError(formatError(requestError, "Unable to update profile"));
         } finally {
+
             setLoading(false);
         }
     };

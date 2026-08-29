@@ -3,6 +3,8 @@ import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../authStore";
 import "../auth.css";
 
+import formatError from "../../../utils/formatError";
+
 export default function AuthPage({ mode }) {
     const isRegister = mode === "register";
     const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", role: "client", companyName: "" });
@@ -23,11 +25,13 @@ export default function AuthPage({ mode }) {
             await (isRegister ? register(form) : login({ email: form.email, password: form.password }));
             navigate(location.state?.from?.pathname || "/dashboard", { replace: true });
         } catch (requestError) {
-            setError(requestError.response?.data?.message || "Something went wrong. Please try again.");
+            console.error("Auth error:", requestError);
+            setError(formatError(requestError, "Authentication failed. Please verify your credentials."));
         } finally {
             setSubmitting(false);
         }
     };
+
 
     return (
         <main className="auth-shell">

@@ -124,6 +124,14 @@ export default function ImportCostCalculator() {
         }
     };
 
+    // Calculate applied foreign currency exchange rate
+    const appliedRate = rateInfo?.rates?.[form.foreignCurrency] || (
+        form.foreignCurrency === "USD" ? 122 :
+        form.foreignCurrency === "EUR" ? 132 :
+        form.foreignCurrency === "CNY" ? 17 :
+        form.foreignCurrency === "GBP" ? 155 : 1
+    );
+
     if (loading) {
         return (
             <div style={{ padding: "40px", textAlign: "center", color: "#64748b" }}>
@@ -381,32 +389,32 @@ export default function ImportCostCalculator() {
                                 <div style={{ display: "flex", flexDirection: "column", gap: "12px", fontSize: "14px" }}>
                                     <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #f1f5f9", paddingBottom: "8px" }}>
                                         <span>Product Cost:</span>
-                                        <strong>BDT {result.breakdownBDT.productCostBDT.toLocaleString()}</strong>
+                                        <strong>BDT {(result.breakdownBDT?.productCostBDT || 0).toLocaleString()}</strong>
                                     </div>
                                     <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #f1f5f9", paddingBottom: "8px" }}>
                                         <span>Shipping & Freight:</span>
-                                        <strong>BDT {result.breakdownBDT.shippingCostBDT.toLocaleString()}</strong>
+                                        <strong>BDT {(result.breakdownBDT?.shippingCostBDT || 0).toLocaleString()}</strong>
                                     </div>
                                     <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #f1f5f9", paddingBottom: "8px" }}>
                                         <span>Customs Duty & Clearance:</span>
-                                        <strong>BDT {result.breakdownBDT.customsDutyBDT.toLocaleString()}</strong>
+                                        <strong>BDT {(result.breakdownBDT?.customsDutyBDT || 0).toLocaleString()}</strong>
                                     </div>
                                     <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #f1f5f9", paddingBottom: "8px" }}>
                                         <span>Tax & VAT:</span>
-                                        <strong>BDT {result.breakdownBDT.taxVATBDT.toLocaleString()}</strong>
+                                        <strong>BDT {(result.breakdownBDT?.taxVATBDT || 0).toLocaleString()}</strong>
                                     </div>
                                     <div style={{ display: "flex", justifyContent: "space-between", background: "#f8fafc", padding: "12px", borderRadius: "8px" }}>
                                         <strong style={{ fontSize: "15px" }}>TOTAL LANDED IMPORT COST:</strong>
-                                        <strong style={{ fontSize: "16px", color: "#1e293b" }}>BDT {result.totalImportCostBDT.toLocaleString()}</strong>
+                                        <strong style={{ fontSize: "16px", color: "#1e293b" }}>BDT {(result.totalImportCostBDT || 0).toLocaleString()}</strong>
                                     </div>
 
                                     <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
                                         <span>Expected Contract Value:</span>
-                                        <strong>BDT {result.expectedSellingValueBDT.toLocaleString()}</strong>
+                                        <strong>BDT {(result.expectedSellingValueBDT || 0).toLocaleString()}</strong>
                                     </div>
                                     <div style={{ display: "flex", justifyContent: "space-between", background: result.isProfitable ? "#f0fdf4" : "#fff1f2", padding: "12px", borderRadius: "8px", border: `1px solid ${result.isProfitable ? "#bbf7d0" : "#fecdd3"}` }}>
                                         <strong style={{ color: result.isProfitable ? "#166534" : "#9f1239" }}>ESTIMATED NET PROFIT / LOSS:</strong>
-                                        <strong style={{ fontSize: "18px", color: result.isProfitable ? "#15803d" : "#be123c" }}>BDT {result.estimatedProfitBDT.toLocaleString()}</strong>
+                                        <strong style={{ fontSize: "18px", color: result.isProfitable ? "#15803d" : "#be123c" }}>BDT {(result.estimatedProfitBDT || 0).toLocaleString()}</strong>
                                     </div>
                                 </div>
                             </div>
@@ -549,7 +557,7 @@ export default function ImportCostCalculator() {
                                                     onClick={() => {
                                                         setSelectedStatusRecord(r);
                                                         setStatusForm({
-                                                             orderStatus: r.orderStatus || "Dispatched / In Transit",
+                                                            orderStatus: r.orderStatus || "Dispatched / In Transit",
                                                             carrier: r.carrier || "",
                                                             trackingNumber: r.trackingNumber || "",
                                                             estimatedArrival: r.estimatedArrival ? r.estimatedArrival.split("T")[0] : "",
@@ -720,4 +728,3 @@ export default function ImportCostCalculator() {
         </div>
     );
 }
-

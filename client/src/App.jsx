@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./layout/Layout";
 import HomePage from "./pages/HomePage";
 import Dashboard from "./pages/Dashboard";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Project module pages
 import ProjectList from "./modules/project/pages/ProjectList";
@@ -48,177 +49,179 @@ const AppLayout = ({ children }) => (
 
 function App() {
     return (
-        <BrowserRouter>
-            <AuthProvider>
-                <Routes>
-                    {/* Public Landing & Homepage */}
-                    <Route path="/" element={<HomePage />} />
+        <ErrorBoundary>
+            <BrowserRouter>
+                <AuthProvider>
+                    <Routes>
+                        {/* Public Landing & Homepage */}
+                        <Route path="/" element={<HomePage />} />
 
-                    {/* Authentication Routes */}
-                    <Route path="/login" element={<AuthPage mode="login" />} />
-                    <Route path="/register" element={<AuthPage mode="register" />} />
+                        {/* Authentication Routes */}
+                        <Route path="/login" element={<AuthPage mode="login" />} />
+                        <Route path="/register" element={<AuthPage mode="register" />} />
 
-                    {/* Dashboard */}
-                    <Route
-                        path="/dashboard"
-                        element={
-                            <AppLayout>
-                                <Dashboard />
-                            </AppLayout>
-                        }
-                    />
+                        {/* Dashboard */}
+                        <Route
+                            path="/dashboard"
+                            element={
+                                <AppLayout>
+                                    <Dashboard />
+                                </AppLayout>
+                            }
+                        />
 
-                    {/* Client Management */}
-                    <Route
-                        path="/clients"
-                        element={
-                            <AppLayout>
-                                <ClientList />
-                            </AppLayout>
-                        }
-                    />
+                        {/* Client Management */}
+                        <Route
+                            path="/clients"
+                            element={
+                                <AppLayout>
+                                    <ClientList />
+                                </AppLayout>
+                            }
+                        />
 
-                    {/* Supplier Management */}
-                    <Route
-                        path="/suppliers"
-                        element={
-                            <AppLayout>
-                                <SupplierList />
-                            </AppLayout>
-                        }
-                    />
+                        {/* Supplier Management */}
+                        <Route
+                            path="/suppliers"
+                            element={
+                                <AppLayout>
+                                    <SupplierList />
+                                </AppLayout>
+                            }
+                        />
 
-                    {/* Project Management & Maps */}
-                    <Route
-                        path="/projects"
-                        element={
-                            <AppLayout>
-                                <ProjectList />
-                            </AppLayout>
-                        }
-                    />
+                        {/* Project Management & Maps */}
+                        <Route
+                            path="/projects"
+                            element={
+                                <AppLayout>
+                                    <ProjectList />
+                                </AppLayout>
+                            }
+                        />
 
-                    <Route
-                        path="/projects/:id"
-                        element={
-                            <AppLayout>
-                                <ProjectDetails />
-                            </AppLayout>
-                        }
-                    />
+                        <Route
+                            path="/projects/:id"
+                            element={
+                                <AppLayout>
+                                    <ProjectDetails />
+                                </AppLayout>
+                            }
+                        />
 
-                    {/* Shipment Tracking */}
-                    <Route
-                        path="/shipments"
-                        element={
-                            <AppLayout>
-                                <ShipmentList />
-                            </AppLayout>
-                        }
-                    />
+                        {/* Shipment Tracking */}
+                        <Route
+                            path="/shipments"
+                            element={
+                                <AppLayout>
+                                    <ShipmentList />
+                                </AppLayout>
+                            }
+                        />
 
-                    {/* Tender and Quotation Management */}
-                    <Route
-                        path="/quotations"
-                        element={
-                            <AppLayout>
-                                <QuotationList />
-                            </AppLayout>
-                        }
-                    />
+                        {/* Tender and Quotation Management */}
+                        <Route
+                            path="/quotations"
+                            element={
+                                <AppLayout>
+                                    <QuotationList />
+                                </AppLayout>
+                            }
+                        />
 
-                    {/* Purchase Order Management */}
-                    <Route
-                        path="/purchase-orders"
-                        element={
-                            <AppLayout>
-                                <PurchaseOrderList />
-                            </AppLayout>
-                        }
-                    />
+                        {/* Purchase Order Management */}
+                        <Route
+                            path="/purchase-orders"
+                            element={
+                                <AppLayout>
+                                    <PurchaseOrderList />
+                                </AppLayout>
+                            }
+                        />
 
-                    {/* Module 3 Routes */}
-                    <Route
-                        path="/invoices"
-                        element={
-                            <AppLayout>
-                                <InvoiceList />
-                            </AppLayout>
-                        }
-                    />
+                        {/* Module 3 Routes */}
+                        <Route
+                            path="/invoices"
+                            element={
+                                <AppLayout>
+                                    <InvoiceList />
+                                </AppLayout>
+                            }
+                        />
 
-                    <Route
-                        path="/inventory"
-                        element={
-                            <AppLayout>
-                                <InventoryList />
-                            </AppLayout>
-                        }
-                    />
+                        <Route
+                            path="/inventory"
+                            element={
+                                <AppLayout>
+                                    <InventoryList />
+                                </AppLayout>
+                            }
+                        />
 
-                    <Route
-                        path="/import-costs"
-                        element={
-                            <AppLayout>
-                                <ImportCostCalculator />
-                            </AppLayout>
-                        }
-                    />
+                        <Route
+                            path="/import-costs"
+                            element={
+                                <AppLayout>
+                                    <ImportCostCalculator />
+                                </AppLayout>
+                            }
+                        />
 
-                    <Route
-                        path="/price-scraper"
-                        element={
-                            <AppLayout>
-                                <PriceScraperManager />
-                            </AppLayout>
-                        }
-                    />
+                        <Route
+                            path="/price-scraper"
+                            element={
+                                <AppLayout>
+                                    <PriceScraperManager />
+                                </AppLayout>
+                            }
+                        />
 
-                    <Route
-                        path="/boq-estimator"
-                        element={
-                            <AppLayout>
-                                <ProjectCostEstimator />
-                            </AppLayout>
-                        }
-                    />
+                        <Route
+                            path="/boq-estimator"
+                            element={
+                                <AppLayout>
+                                    <ProjectCostEstimator />
+                                </AppLayout>
+                            }
+                        />
 
-                    <Route
-                        path="/product-recommendations"
-                        element={
-                            <AppLayout>
-                                <ProductRecommendationList />
-                            </AppLayout>
-                        }
-                    />
+                        <Route
+                            path="/product-recommendations"
+                            element={
+                                <AppLayout>
+                                    <ProductRecommendationList />
+                                </AppLayout>
+                            }
+                        />
 
-                    {/* Profile */}
-                    <Route
-                        path="/profile"
-                        element={
-                            <AppLayout>
-                                <ProfilePage />
-                            </AppLayout>
-                        }
-                    />
+                        {/* Profile */}
+                        <Route
+                            path="/profile"
+                            element={
+                                <AppLayout>
+                                    <ProfilePage />
+                                </AppLayout>
+                            }
+                        />
 
-                    {/* Admin User Management */}
-                    <Route
-                        path="/admin/users"
-                        element={
-                            <ProtectedRoute roles={["admin"]}>
-                                <Layout>
-                                    <UserManagement />
-                                </Layout>
-                            </ProtectedRoute>
-                        }
-                    />
+                        {/* Admin User Management */}
+                        <Route
+                            path="/admin/users"
+                            element={
+                                <ProtectedRoute roles={["admin"]}>
+                                    <Layout>
+                                        <UserManagement />
+                                    </Layout>
+                                </ProtectedRoute>
+                            }
+                        />
 
-                    {/* Fallback */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-            </AuthProvider>
-        </BrowserRouter>
+                        {/* Fallback */}
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                </AuthProvider>
+            </BrowserRouter>
+        </ErrorBoundary>
     );
 }
 

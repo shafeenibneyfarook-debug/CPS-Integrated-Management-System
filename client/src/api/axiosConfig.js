@@ -8,13 +8,9 @@ import axios from "axios";
 const API = axios.create({
 
     // Backend server base URL
-    // Example:
-    // API.get("/projects")
-    // becomes:
-    // GET http://localhost:5001/api/projects
-
-    baseURL: import.meta.env.VITE_API_URL ||
-        (import.meta.env.PROD ? "/api" : "http://localhost:5001/api")
+    // When hosted on Vercel, relative "/api" automatically routes to the serverless function.
+    // In local dev, Vite proxy automatically forwards "/api" to local server (port 5001).
+    baseURL: import.meta.env.VITE_API_URL || "/api"
 
 });
 

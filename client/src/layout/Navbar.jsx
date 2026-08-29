@@ -55,30 +55,56 @@ export default function Navbar() {
                 const alerts = [];
 
                 if (role === "manager") {
-                    const res = await API.get("/quotations");
-                    const pending = (res.data || []).filter(q => q.status === "Submitted" || q.adminVerificationStatus === "Pending Admin Approval");
+                    const [qRes, pRes] = await Promise.all([
+                        API.get("/quotations").catch(() => ({ data: [] })),
+                        API.get("/projects").catch(() => ({ data: [] }))
+                    ]);
+                    const quotations = Array.isArray(qRes.data) ? qRes.data : [];
+                    const projects = Array.isArray(pRes.data) ? pRes.data : [];
+
+                    const pending = quotations.filter(q => q && (q.status === "Submitted" || q.adminVerificationStatus === "Pending Admin Approval"));
                     pending.forEach(q => {
                         alerts.push({
                             id: q._id,
-                            title: `Client Proposal: ${q.title}`,
+                            title: `Client Proposal: ${q.title || q.quotationNumber || "Proposal"}`,
                             subtitle: `From ${q.client?.companyName || q.client?.name || "Client"} (${q.constructionSiteLocation || "Site"})`,
                             target: "/boq-estimator",
                             tag: "Action Required"
                         });
                     });
+
+                    // Construction Progress Photo Verification Alerts for Manager
+                    projects.forEach(p => {
+                        if (p && p.progressUpdates && Array.isArray(p.progressUpdates)) {
+                            p.progressUpdates.filter(u => u && u.status === "Pending Approval").forEach(u => {
+                                alerts.push({
+                                    id: `photo-verify-${p._id}-${u._id}`,
+                                    title: `📸 Photo Verification: ${p.projectName}`,
+                                    subtitle: `Logistics logged ${u.percentage}% (${u.stageName}) — Site photo awaiting approval`,
+                                    target: `/projects/${p._id}`,
+                                    tag: "Photo Verification"
+                                });
+                            });
+                        }
+                    });
                 } else if (role === "admin") {
-                    const [qRes, pRes] = await Promise.all([
-                        API.get("/quotations"),
-                        API.get("/price-scraper")
+                    const [qRes, pRes, prRes] = await Promise.all([
+                        API.get("/quotations").catch(() => ({ data: [] })),
+                        API.get("/price-scraper").catch(() => ({ data: { prices: [] } })),
+                        API.get("/projects").catch(() => ({ data: [] }))
                     ]);
-                    const pendingOffers = (qRes.data || []).filter(q => q.adminVerificationStatus === "Pending Admin Approval");
-                    const duplicates = (pRes.data.prices || []).filter(p => p.flagReason?.toLowerCase().includes("duplicate"));
+                    const quotations = Array.isArray(qRes.data) ? qRes.data : [];
+                    const prices = Array.isArray(pRes.data?.prices) ? pRes.data.prices : (Array.isArray(pRes.data) ? pRes.data : []);
+                    const projects = Array.isArray(prRes.data) ? prRes.data : [];
+
+                    const pendingOffers = quotations.filter(q => q && q.adminVerificationStatus === "Pending Admin Approval");
+                    const duplicates = prices.filter(p => p && p.flagReason?.toLowerCase().includes("duplicate"));
 
                     pendingOffers.forEach(q => {
                         alerts.push({
                             id: q._id,
-                            title: `Manager Offer Verification: ${q.quotationNumber}`,
-                            subtitle: `${q.title} — BDT ${q.total?.toLocaleString()}`,
+                            title: `Manager Offer Verification: ${q.quotationNumber || "Quote"}`,
+                            subtitle: `${q.title || "Offer"} — BDT ${(q.total || 0).toLocaleString()}`,
                             target: "/quotations",
                             tag: "Offer Verification"
                         });
@@ -87,11 +113,26 @@ export default function Navbar() {
                     duplicates.forEach(p => {
                         alerts.push({
                             id: p._id,
-                            title: `Duplicate Scraped Price: ${p.itemName}`,
-                            subtitle: `Category: ${p.category} (${p.brand})`,
+                            title: `Duplicate Scraped Price: ${p.itemName || "Item"}`,
+                            subtitle: `Category: ${p.category || "General"} (${p.brand || "Standard"})`,
                             target: "/price-scraper",
                             tag: "Cleanup Alert"
                         });
+                    });
+
+                    // Admin also oversees pending photo verifications
+                    projects.forEach(p => {
+                        if (p && p.progressUpdates && Array.isArray(p.progressUpdates)) {
+                            p.progressUpdates.filter(u => u && u.status === "Pending Approval").forEach(u => {
+                                alerts.push({
+                                    id: `admin-photo-verify-${p._id}-${u._id}`,
+                                    title: `📸 Photo Verification: ${p.projectName}`,
+                                    subtitle: `Logistics logged ${u.percentage}% (${u.stageName}) — Awaiting sign-off`,
+                                    target: `/projects/${p._id}`,
+                                    tag: "Photo Sign-Off"
+                                });
+                            });
+                        }
                     });
                 } else if (role === "client") {
                     const [qRes, iRes, pRes] = await Promise.all([
@@ -99,15 +140,18 @@ export default function Navbar() {
                         API.get("/invoices").catch(() => ({ data: { invoices: [] } })),
                         API.get("/projects").catch(() => ({ data: [] }))
                     ]);
-                    const verifiedOffers = (qRes.data || []).filter(q => q.adminVerificationStatus === "Admin Verified" && q.status !== "Approved" && q.status !== "Rejected");
-                    const verifiedInvoices = (iRes.data.invoices || []).filter(i => i.paymentStatus !== "Paid");
-                    const runningProjects = (pRes.data || []).filter(p => p.status === "Running" || p.status === "Pending");
+                    const quotations = Array.isArray(qRes.data) ? qRes.data : [];
+                    const invoices = Array.isArray(iRes.data?.invoices) ? iRes.data.invoices : (Array.isArray(iRes.data) ? iRes.data : []);
+                    const projects = Array.isArray(pRes.data) ? pRes.data : [];
+
+                    const verifiedOffers = quotations.filter(q => q && q.adminVerificationStatus === "Admin Verified" && q.status !== "Approved" && q.status !== "Rejected");
+                    const verifiedInvoices = invoices.filter(i => i && i.paymentStatus !== "Paid");
 
                     verifiedOffers.forEach(q => {
                         alerts.push({
                             id: q._id,
-                            title: `Verified Offer Ready: ${q.quotationNumber}`,
-                            subtitle: `${q.title} — Review & Accept/Decline`,
+                            title: `Verified Offer Ready: ${q.quotationNumber || "Quote"}`,
+                            subtitle: `${q.title || "Offer"} — Review & Accept/Decline`,
                             target: "/quotations",
                             tag: "Offer Ready"
                         });
@@ -116,48 +160,59 @@ export default function Navbar() {
                     verifiedInvoices.forEach(i => {
                         alerts.push({
                             id: i._id,
-                            title: `Finance Verified Invoice: ${i.invoiceNumber}`,
-                            subtitle: `Due: BDT ${i.dueAmount?.toLocaleString()}`,
+                            title: `Finance Verified Invoice: ${i.invoiceNumber || "Invoice"}`,
+                            subtitle: `Due: BDT ${(i.dueAmount || 0).toLocaleString()}`,
                             target: "/invoices",
                             tag: "Payment Due"
                         });
                     });
 
-                    runningProjects.forEach(p => {
-                        alerts.push({
-                            id: p._id,
-                            title: `Active Construction Project: ${p.projectName}`,
-                            subtitle: `Status: ${p.status} • Site: ${p.projectLocation}`,
-                            target: "/projects",
-                            tag: "Project Active"
-                        });
+                    // Client live verified photo proof notifications
+                    projects.forEach(p => {
+                        if (p && p.progressUpdates && Array.isArray(p.progressUpdates)) {
+                            p.progressUpdates.filter(u => u && u.status === "Approved").forEach(u => {
+                                alerts.push({
+                                    id: `client-proof-${p._id}-${u._id}`,
+                                    title: `🏗️ Verified Site Progress: ${p.projectName}`,
+                                    subtitle: `Reached ${u.percentage}% (${u.stageName}) with manager-verified photo proof`,
+                                    target: `/projects/${p._id}`,
+                                    tag: "Verified Proof"
+                                });
+                            });
+                        }
                     });
                 } else if (role === "accounts_officer") {
-                    const res = await API.get("/invoices");
-                    const pending = (res.data.invoices || []).filter(i => i.financeVerificationStatus === "Pending Finance Verification");
+                    const res = await API.get("/invoices").catch(() => ({ data: { invoices: [] } }));
+                    const invoices = Array.isArray(res.data?.invoices) ? res.data.invoices : (Array.isArray(res.data) ? res.data : []);
+                    const pending = invoices.filter(i => i && i.financeVerificationStatus === "Pending Finance Verification");
                     pending.forEach(i => {
                         const projTitle = i.quotation?.title || i.project?.projectName || "Building Project";
                         const projSite = i.quotation?.constructionSiteLocation || i.project?.siteAddress || "Site";
                         alerts.push({
                             id: i._id,
                             title: `Project Invoice: ${projTitle}`,
-                            subtitle: `Invoice #${i.invoiceNumber} (BDT ${i.totalAmount?.toLocaleString()}) — ${projSite}`,
+                            subtitle: `Invoice #${i.invoiceNumber || "Inv"} (BDT ${(i.totalAmount || 0).toLocaleString()}) — ${projSite}`,
                             target: "/invoices",
                             tag: "Finance Verification"
                         });
                     });
                 } else if (role === "operations_officer" || role === "staff") {
-                    const [qRes, pRes] = await Promise.all([
-                        API.get("/quotations"),
-                        API.get("/price-scraper")
+                    const [qRes, pRes, prRes] = await Promise.all([
+                        API.get("/quotations").catch(() => ({ data: [] })),
+                        API.get("/price-scraper").catch(() => ({ data: { prices: [] } })),
+                        API.get("/projects").catch(() => ({ data: [] }))
                     ]);
-                    const approvedProposals = (qRes.data || []).filter(q => q.status === "Approved");
-                    const unverifiedQty = (pRes.data.prices || []).filter(p => p.availableQuantity > 0 && p.quantityVerificationStatus !== "Logistics Verified");
+                    const quotations = Array.isArray(qRes.data) ? qRes.data : [];
+                    const prices = Array.isArray(pRes.data?.prices) ? pRes.data.prices : (Array.isArray(pRes.data) ? pRes.data : []);
+                    const projects = Array.isArray(prRes.data) ? prRes.data : [];
+
+                    const approvedProposals = quotations.filter(q => q && q.status === "Approved");
+                    const unverifiedQty = prices.filter(p => p && p.availableQuantity > 0 && p.quantityVerificationStatus !== "Logistics Verified");
 
                     approvedProposals.forEach(q => {
                         alerts.push({
                             id: q._id,
-                            title: `Approved Site Execution: ${q.quotationNumber}`,
+                            title: `Approved Site Execution: ${q.quotationNumber || "Quote"}`,
                             subtitle: `Location: ${q.constructionSiteLocation || "Site"}`,
                             target: "/shipments",
                             tag: "Logistics Action"
@@ -167,35 +222,52 @@ export default function Navbar() {
                     unverifiedQty.forEach(p => {
                         alerts.push({
                             id: p._id,
-                            title: `Supplier Qty Verification: ${p.itemName}`,
-                            subtitle: `Supplier Qty: ${p.availableQuantity} ${p.unit}`,
+                            title: `Supplier Qty Verification: ${p.itemName || "Item"}`,
+                            subtitle: `Supplier Qty: ${p.availableQuantity} ${p.unit || "Units"}`,
                             target: "/price-scraper",
                             tag: "Qty Verification"
                         });
+                    });
+
+                    // Notify Logistics Officer if any update was rejected
+                    projects.forEach(p => {
+                        if (p && p.progressUpdates && Array.isArray(p.progressUpdates)) {
+                            p.progressUpdates.filter(u => u && u.status === "Rejected").forEach(u => {
+                                alerts.push({
+                                    id: `rejected-update-${p._id}-${u._id}`,
+                                    title: `❌ Correction Required: ${p.projectName}`,
+                                    subtitle: `Manager rejected ${u.percentage}%: "${u.rejectionReason || 'Correct site photo'}"`,
+                                    target: `/projects/${p._id}`,
+                                    tag: "Correction Needed"
+                                });
+                            });
+                        }
                     });
                 } else if (role === "supplier") {
                     const [res, invRes] = await Promise.all([
                         API.get("/price-scraper").catch(() => ({ data: { prices: [] } })),
                         API.get("/inventory/alerts").catch(() => ({ data: { alerts: [] } }))
                     ]);
+                    const prices = Array.isArray(res.data?.prices) ? res.data.prices : (Array.isArray(res.data) ? res.data : []);
+                    const alertsList = Array.isArray(invRes.data?.alerts) ? invRes.data.alerts : (Array.isArray(invRes.data) ? invRes.data : []);
 
-                    const unsupplied = (res.data.prices || []).filter(p => p.verificationStatus === "Verified" && (!p.availableQuantity || p.availableQuantity === 0));
+                    const unsupplied = prices.filter(p => p && p.verificationStatus === "Verified" && (!p.availableQuantity || p.availableQuantity === 0));
                     unsupplied.forEach(p => {
                         alerts.push({
                             id: p._id,
-                            title: `Material Verified: ${p.itemName}`,
+                            title: `Material Verified: ${p.itemName || "Material"}`,
                             subtitle: `Submit firm's available supply quantity`,
                             target: "/price-scraper",
                             tag: "Capacity Offer"
                         });
                     });
 
-                    const outOfStockItems = (invRes.data.alerts || []).filter(item => item.currentStock === 0 || item.status === "Out of Stock");
+                    const outOfStockItems = alertsList.filter(item => item && (item.currentStock === 0 || item.status === "Out of Stock"));
                     outOfStockItems.forEach(item => {
                         alerts.push({
                             id: `inv-${item._id}`,
-                            title: `🚨 Stock Out Alert: ${item.itemName}`,
-                            subtitle: `Stock hit 0 ${item.unit} (${item.category}) — Open to all suppliers to add stock`,
+                            title: `🚨 Stock Out Alert: ${item.itemName || "Item"}`,
+                            subtitle: `Stock hit 0 ${item.unit || "Pcs"} (${item.category || "General"}) — Open to all suppliers to add stock`,
                             target: "/inventory",
                             tag: "Supplier Stock-Out Alert"
                         });
@@ -203,7 +275,12 @@ export default function Navbar() {
                 }
 
                 if (active) {
-                    const seenIds = JSON.parse(localStorage.getItem(getSeenStorageKey()) || "[]");
+                    let seenIds = [];
+                    try {
+                        seenIds = JSON.parse(localStorage.getItem(getSeenStorageKey()) || "[]");
+                    } catch {
+                        seenIds = [];
+                    }
                     const unreadAlerts = alerts.filter(a => !seenIds.includes(String(a.id)));
                     setNotificationList(unreadAlerts);
                 }
@@ -218,6 +295,7 @@ export default function Navbar() {
     }, [role, userId]);
 
     const getPageTitle = (path) => {
+        if (!path) return "Operations Dashboard";
         if (path.includes("/clients")) return "Client Directory";
         if (path.includes("/suppliers")) return "Supplier Directory";
         if (path.includes("/projects")) return "Projects & Site Locations";
@@ -235,18 +313,6 @@ export default function Navbar() {
         return "Operations Dashboard";
     };
 
-    const formatRole = (r) => {
-        switch (r) {
-            case "admin": return "Administrator";
-            case "manager": return "Manager";
-            case "accounts_officer": return "Unified Head of Finance";
-            case "operations_officer": return "Operations Officer";
-            case "supplier": return "Material Vendor";
-            case "staff": return "Staff";
-            default: return "Client Account";
-        }
-    };
-
     const currentTitle = getPageTitle(location.pathname);
     const unreadCount = notificationList.length;
 
@@ -259,10 +325,10 @@ export default function Navbar() {
                 <strong className="topbar-title">{currentTitle}</strong>
             </div>
 
-            {/* Right: Header Actions & Permanently Visible Notification Center */}
+            {/* Right: Header Actions & Notification Center */}
             <div className="topbar-right" style={{ position: "relative" }}>
 
-                {/* PERMANENTLY VISIBLE NOTIFICATION BELL BUTTON */}
+                {/* NOTIFICATION BELL BUTTON */}
                 <button
                     type="button"
                     onClick={() => setShowDropdown(!showDropdown)}
@@ -395,13 +461,12 @@ export default function Navbar() {
                     </div>
                 )}
 
-
                 <div className="topbar-user">
                     <Link to="/profile" className="user-profile-link" title="View Account Profile">
                         <div className="user-initials">
-                            {user?.name?.charAt(0).toUpperCase()}
+                            {(user?.name || "A").charAt(0).toUpperCase()}
                         </div>
-                        <span className="user-fullname">{user?.name}</span>
+                        <span className="user-fullname">{user?.name || "User"}</span>
                     </Link>
 
                     <button onClick={handleLogout} className="topbar-logout-btn" title="Sign out">

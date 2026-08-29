@@ -617,35 +617,35 @@ export default function Dashboard() {
                         </div>
 
                         <div className="activity-stream">
-                            {activities.projects?.length === 0 && activities.clients?.length === 0 && activities.suppliers?.length === 0 ? (
+                            {(!activities.projects?.length && !activities.clients?.length && !activities.suppliers?.length) ? (
                                 <div className="activity-empty">No recent activity logged.</div>
                             ) : (
                                 <>
-                                    {activities.projects?.map((project) => (
+                                    {(activities.projects || []).map((project) => (
                                         <div key={project._id} className="stream-item">
                                             <span className="stream-dot blue" />
                                             <div className="stream-content">
-                                                <p>Project initialized: <strong>{project.projectName}</strong></p>
+                                                <p>Project initialized: <strong>{project.projectName || "Project"}</strong></p>
                                                 <small>{project.clientName || "Contractor Project"}</small>
                                             </div>
                                         </div>
                                     ))}
 
-                                    {activities.clients?.map((client) => (
+                                    {(activities.clients || []).map((client) => (
                                         <div key={client._id} className="stream-item">
                                             <span className="stream-dot green" />
                                             <div className="stream-content">
-                                                <p>Client registered: <strong>{client.companyName || client.name}</strong></p>
-                                                <small>{client.contactPerson || client.email}</small>
+                                                <p>Client registered: <strong>{client.companyName || client.name || "Client"}</strong></p>
+                                                <small>{client.contactPerson || client.email || "Contact"}</small>
                                             </div>
                                         </div>
                                     ))}
 
-                                    {activities.suppliers?.map((supplier) => (
+                                    {(activities.suppliers || []).map((supplier) => (
                                         <div key={supplier._id} className="stream-item">
                                             <span className="stream-dot amber" />
                                             <div className="stream-content">
-                                                <p>Supplier onboarded: <strong>{supplier.supplierName || supplier.name}</strong></p>
+                                                <p>Supplier onboarded: <strong>{supplier.supplierName || supplier.name || "Supplier"}</strong></p>
                                                 <small>{supplier.country || "Verified Vendor"}</small>
                                             </div>
                                         </div>
@@ -656,6 +656,7 @@ export default function Dashboard() {
                     </div>
                 </>
             )}
+
         </div>
     );
 }

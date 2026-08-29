@@ -736,4 +736,107 @@ td button:last-child {
     background: #fffbeb;
     color: #b45309;
     border: 1px solid #fde68a;
+}
+
+/* ==========================================
+   CONSTRUCTION PHOTO VERIFICATION STYLES
+========================================== */
+.photo-timeline-card {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.photo-timeline-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+}
+
+.photo-badge-approved {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #86efac;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.photo-badge-pending {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.photo-badge-rejected {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.photo-thumb-container {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #0f172a;
+    cursor: pointer;
+    aspect-ratio: 16/10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.photo-thumb-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.photo-thumb-container:hover img {
+    transform: scale(1.04);
+}
+
+.photo-thumb-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.8) 0%, transparent 60%);
+    display: flex;
+    align-items: flex-end;
+    padding: 12px;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    opacity: 0.9;
+}
+
+.photo-comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .photo-comparison-grid {
+        grid-template-columns: 1fr;
+    }
 }

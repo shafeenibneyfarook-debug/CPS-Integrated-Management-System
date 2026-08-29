@@ -81,8 +81,10 @@ exports.login = async (req, res) => {
         await user.save();
         return res.json({ token: createToken(user), user });
     } catch (_error) {
-        return res.status(500).json({ message: "Unable to sign in. Please try again." });
+        console.error("Login error:", _error);
+        return res.status(500).json({ message: "Unable to sign in. Please try again.", error: _error.message });
     }
+
 };
 
 exports.me = (req, res) => res.json({ user: req.user });

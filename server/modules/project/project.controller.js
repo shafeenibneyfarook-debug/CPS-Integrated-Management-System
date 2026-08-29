@@ -11,7 +11,8 @@ const populateProject = (query) => query
     .populate("assignedAccountsOfficer", "name email phone role")
     .populate("managerApprovedBy", "name email role")
     .populate("financeApprovedBy", "name email role")
-    .populate("progressUpdates.updatedBy", "name email role");
+    .populate("progressUpdates.updatedBy", "name email role")
+    .populate("progressUpdates.reviewedBy", "name email role");
 
 exports.createProject = async (req, res) => {
     try {
@@ -241,8 +242,8 @@ exports.deleteProject = async (req, res) => {
     }
 };
 
-// 5. Update Project Progress & Delays (Logistics & Operations Officer ONLY)
-// Automatically checks for milestones (25%, 50%, 75%, 100%) and notifies Manager
+// 5. Update Project Progress & Delays with Photo Verification (Logistics & Operations Officer ONLY)
+// Requires live site photo proof (Base64) and submits for Manager Approval
 exports.updateProjectProgress = async (req, res) => {
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -251,7 +252,8 @@ exports.updateProjectProgress = async (req, res) => {
 
         const project = await Project.findById(req.params.id)
             .populate("assignedManager")
-            .populate("assignedOperationsOfficer");
+            .populate("assignedOperationsOfficer")
+            .populate("client");
 
         if (!project) return res.status(404).json({ message: "Project not found" });
 
@@ -266,10 +268,12 @@ exports.updateProjectProgress = async (req, res) => {
         const {
             percentage,
             stageName,
+            monthName,
             updateNotes = "",
             isDelayed = false,
             delayReason = "",
-            delayImpactDays = 0
+            delayImpactDays = 0,
+            photos = []
         } = req.body;
 
         const newPercent = Number(percentage);
@@ -285,97 +289,272 @@ exports.updateProjectProgress = async (req, res) => {
             return res.status(400).json({ message: "A reason must be recorded whenever a delay is reported." });
         }
 
-        // Milestone checkpoints
+        // Validate that photo proof is attached (Base64 or URL)
+        let formattedPhotos = [];
+        if (Array.isArray(photos) && photos.length > 0) {
+            formattedPhotos = photos.map(p => typeof p === "string" ? { url: p, caption: stageName.trim() } : { url: p.url, caption: p.caption || stageName.trim() });
+        } else if (typeof photos === "string" && photos.trim()) {
+            formattedPhotos = [{ url: photos.trim(), caption: stageName.trim() }];
+        }
+
+        if (formattedPhotos.length === 0) {
+            return res.status(400).json({
+                message: "Site verification photo is required. Please upload at least one progress photo to prevent unverified updates."
+            });
+        }
+
+        // Determine derived or provided month
+        const targetMonth = monthName && monthName.trim()
+            ? monthName.trim()
+            : new Date().toLocaleString("default", { month: "long" });
+
+        // Calculate milestone flags for this target percentage
         const milestoneCheckpoints = [25, 50, 75, 100];
         const newlyCrossedMilestones = [];
         const existingMilestones = project.milestonesPassed || [];
-
         for (const ms of milestoneCheckpoints) {
             if (newPercent >= ms && !existingMilestones.includes(ms)) {
                 newlyCrossedMilestones.push(ms);
-                existingMilestones.push(ms);
             }
-        }
-
-        project.milestonesPassed = existingMilestones;
-        project.progressPercentage = newPercent;
-        project.currentStage = stageName.trim();
-
-        if (newPercent >= 100) {
-            project.status = "Completed";
-        } else if (isDelayed) {
-            project.hasActiveDelay = true;
-            project.latestDelayReason = delayReason.trim();
-            project.totalDelayDays = (project.totalDelayDays || 0) + Number(delayImpactDays || 0);
-        } else {
-            project.hasActiveDelay = false;
-            project.latestDelayReason = "";
         }
 
         let managerNotified = false;
         let managerNotifiedAt = null;
 
-        // Check if milestone was reached -> Notify Manager
-        if (newlyCrossedMilestones.length > 0) {
-            let managerUser = project.assignedManager;
-            if (!managerUser) {
-                managerUser = await User.findOne({ role: "manager", isActive: true });
-            }
+        // Notify Assigned Manager for Photo Review
+        let managerUser = project.assignedManager;
+        if (!managerUser) {
+            managerUser = await User.findOne({ role: "manager", isActive: true });
+        }
 
-            const milestoneLabels = newlyCrossedMilestones.map(m => `${m}%`).join(", ");
-            const managerEmail = managerUser?.email;
+        if (managerUser?.email) {
+            await sendNotificationEmail({
+                recipient: managerUser.email,
+                subject: `📸 [Photo Verification Needed] Project "${project.projectName}" - ${newPercent}% (${stageName.trim()})`,
+                emailType: "Progress Photo Verification Alert",
+                referenceId: project._id.toString(),
+                referenceModel: "Project",
+                bodyText: `Dear Project Manager (${managerUser.name || 'Manager'}),
 
-            if (managerEmail) {
-                await sendNotificationEmail({
-                    recipient: managerEmail,
-                    subject: `🎯 [Milestone Reached] Project "${project.projectName}" reached ${milestoneLabels}!`,
-                    emailType: "Milestone Progress Alert",
-                    referenceId: project._id.toString(),
-                    referenceModel: "Project",
-                    bodyText: `Dear Project Manager (${managerUser.name || 'Manager'}),
+A new construction progress update with live site photo proof has been submitted by Logistics Officer (${req.user.name}) and requires your verification and sign-off.
 
-Project "${project.projectName}" has officially reached milestone(s): ${milestoneLabels} (Current Overall Progress: ${newPercent}%).
-
-• Current Stage: ${stageName.trim()}
-• Progress: ${newPercent}%
+• Project: ${project.projectName}
+• Target Progress: ${newPercent}%
+• Month: ${targetMonth}
+• Stage: ${stageName.trim()}
 • Status: ${isDelayed ? '⚠️ DELAYED: ' + delayReason.trim() + ' (Impact: +' + delayImpactDays + ' days)' : '✅ ON SCHEDULE'}
-• Field Notes: ${updateNotes || 'No additional notes provided.'}
-• Updated By: ${req.user.name} (Logistics & Operations Officer)
-• Timestamp: ${new Date().toLocaleString()}
+• Photos Attached: ${formattedPhotos.length} site proof photo(s)
+• Field Remarks: ${updateNotes.trim() || 'No additional notes provided.'}
+• Submitted At: ${new Date().toLocaleString()}
 
-Please review the progress and team updates on your Project Dashboard.`,
-                    userId: req.user._id
-                });
+Please open the Project Details page to inspect the photos, compare with previous milestone stages, and approve or request correction.`,
+                userId: req.user._id
+            });
 
-                managerNotified = true;
-                managerNotifiedAt = new Date();
-            }
+            managerNotified = true;
+            managerNotifiedAt = new Date();
         }
 
         const updateEntry = {
             percentage: newPercent,
             stageName: stageName.trim(),
+            monthName: targetMonth,
             updateNotes: updateNotes.trim(),
+            photos: formattedPhotos,
             isDelayed: Boolean(isDelayed),
             delayReason: isDelayed ? delayReason.trim() : "",
             delayImpactDays: isDelayed ? Number(delayImpactDays || 0) : 0,
             milestonesTriggered: newlyCrossedMilestones,
+            status: "Pending Approval",
+            managerNote: "",
+            rejectionReason: "",
             managerNotified,
             managerNotifiedAt,
+            clientNotified: false,
             updatedBy: req.user._id,
             timestamp: new Date()
         };
 
         if (!project.progressUpdates) project.progressUpdates = [];
         project.progressUpdates.unshift(updateEntry);
+
+        // Recalculate pending progress count
+        project.pendingProgressCount = project.progressUpdates.filter(u => u.status === "Pending Approval").length;
         await project.save();
 
         return res.status(200).json({
-            message: newlyCrossedMilestones.length > 0
-                ? `Progress updated to ${newPercent}%. Milestone(s) ${newlyCrossedMilestones.map(m => m + '%').join(', ')} achieved! Manager has been notified.`
-                : `Progress updated to ${newPercent}% (${stageName}).`,
+            message: `Progress photo update (${newPercent}% - ${stageName}) submitted successfully! Forwarded to Manager for verification and approval.`,
             project: await populateProject(Project.findById(project._id))
         });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+// 5b. Manager Review (Approve / Reject) Construction Progress Photo Update
+// When approved: officially updates project progress, adds milestone, and notifies Client with live proof.
+// When rejected: requires explanatory reason note, notifies Logistics Officer to correct and resubmit.
+exports.reviewProgressUpdate = async (req, res) => {
+    try {
+        const { id, updateId } = req.params;
+        const { action, managerNote = "", rejectionReason = "" } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(updateId)) {
+            return res.status(400).json({ message: "Invalid project ID or update ID" });
+        }
+
+        const userRole = req.user?.role;
+        if (userRole !== "admin" && userRole !== "manager") {
+            return res.status(403).json({
+                message: "Access Denied: Only Project Managers and Admins can verify and approve construction progress photos."
+            });
+        }
+
+        const project = await Project.findById(id)
+            .populate("assignedManager")
+            .populate("assignedOperationsOfficer")
+            .populate("client");
+
+        if (!project) return res.status(404).json({ message: "Project not found" });
+
+        const updateItem = project.progressUpdates.id(updateId);
+        if (!updateItem) return res.status(404).json({ message: "Progress update record not found" });
+
+        if (action === "Reject") {
+            const reason = (rejectionReason || managerNote || "").trim();
+            if (!reason) {
+                return res.status(400).json({
+                    message: "A clear rejection reason / note is required explaining what must be corrected by the Logistics Officer."
+                });
+            }
+
+            updateItem.status = "Rejected";
+            updateItem.reviewedBy = req.user._id;
+            updateItem.reviewedAt = new Date();
+            updateItem.rejectionReason = reason;
+            updateItem.managerNote = reason;
+
+            // Recalculate pending count
+            project.pendingProgressCount = project.progressUpdates.filter(u => u.status === "Pending Approval").length;
+            await project.save();
+
+            // Find logistics officer to notify
+            let opsUser = null;
+            if (updateItem.updatedBy) {
+                opsUser = await User.findById(updateItem.updatedBy);
+            }
+            if (!opsUser) opsUser = project.assignedOperationsOfficer;
+
+            if (opsUser?.email) {
+                await sendNotificationEmail({
+                    recipient: opsUser.email,
+                    subject: `❌ [Correction Required] Progress Update Rejected: "${project.projectName}"`,
+                    emailType: "Progress Verification Rejection Alert",
+                    referenceId: project._id.toString(),
+                    referenceModel: "Project",
+                    bodyText: `Dear Logistics Officer (${opsUser.name || 'Logistics Officer'}),
+
+Your submitted progress update for project "${project.projectName}" (${updateItem.percentage}% - ${updateItem.stageName}) was NOT approved by Manager (${req.user.name}).
+
+• Reason / Correction Note: "${reason}"
+• Stage: ${updateItem.stageName}
+• Review Date: ${new Date().toLocaleString()}
+
+Please correct the site progress documentation, capture an updated/clearer photo proof if required, and resubmit the update.`,
+                    userId: req.user._id
+                });
+            }
+
+            return res.status(200).json({
+                message: "Progress update rejected. Rejection note recorded and Logistics Officer has been notified to correct and resubmit.",
+                project: await populateProject(Project.findById(project._id))
+            });
+        }
+
+        if (action === "Approve") {
+            updateItem.status = "Approved";
+            updateItem.reviewedBy = req.user._id;
+            updateItem.reviewedAt = new Date();
+            updateItem.managerNote = (managerNote || "Approved with verified site photo proof").trim();
+            updateItem.rejectionReason = "";
+
+            // Officially apply approved progress to project
+            const newPercent = updateItem.percentage;
+            project.progressPercentage = newPercent;
+            project.currentStage = updateItem.stageName;
+
+            if (updateItem.photos && updateItem.photos.length > 0) {
+                project.latestVerifiedPhoto = updateItem.photos[0].url;
+            }
+
+            // Milestone checkpoints
+            const milestoneCheckpoints = [25, 50, 75, 100];
+            const newlyCrossed = [];
+            const existingMilestones = project.milestonesPassed || [];
+            for (const ms of milestoneCheckpoints) {
+                if (newPercent >= ms && !existingMilestones.includes(ms)) {
+                    newlyCrossed.push(ms);
+                    existingMilestones.push(ms);
+                }
+            }
+            project.milestonesPassed = existingMilestones;
+
+            if (newPercent >= 100) {
+                project.status = "Completed";
+            } else if (updateItem.isDelayed) {
+                project.hasActiveDelay = true;
+                project.latestDelayReason = updateItem.delayReason;
+                project.totalDelayDays = (project.totalDelayDays || 0) + Number(updateItem.delayImpactDays || 0);
+            } else {
+                project.hasActiveDelay = false;
+                project.latestDelayReason = "";
+            }
+
+            // Client Notification with Live Proof
+            let clientEmail = project.client?.email;
+            if (!clientEmail) {
+                const clientDoc = await Client.findOne({ companyName: project.clientName });
+                clientEmail = clientDoc?.email;
+            }
+
+            if (clientEmail) {
+                await sendNotificationEmail({
+                    recipient: clientEmail,
+                    subject: `🏗️ [Verified Site Update] "${project.projectName}" reached ${newPercent}% (${updateItem.stageName})!`,
+                    emailType: "Client Progress Verification Notice",
+                    referenceId: project._id.toString(),
+                    referenceModel: "Project",
+                    bodyText: `Dear Valued Client (${project.clientName}),
+
+We are pleased to share the latest verified construction milestone for your project "${project.projectName}".
+
+• Verified Overall Progress: ${newPercent}%
+• Month: ${updateItem.monthName || new Date().toLocaleString("default", { month: "long" })}
+• Current Construction Stage: ${updateItem.stageName}
+• Manager Verification: ✅ Verified & Signed Off by Project Manager (${req.user.name})
+• Live Site Photo Proof: Attached & Verified in your Client Dashboard
+• Verification Remarks: ${updateItem.managerNote || 'Inspected on-site; matches architectural drawings and quality standards.'}
+• Timestamp: ${new Date().toLocaleString()}
+
+You can log in to your CPS Client Dashboard anytime to view the full chronological photo timeline, compare site photos side-by-side, and track real-time project progress.`,
+                    userId: req.user._id
+                });
+
+                updateItem.clientNotified = true;
+                updateItem.clientNotifiedAt = new Date();
+            }
+
+            // Recalculate pending count
+            project.pendingProgressCount = project.progressUpdates.filter(u => u.status === "Pending Approval").length;
+            await project.save();
+
+            return res.status(200).json({
+                message: `Progress update (${newPercent}% - ${updateItem.stageName}) verified & approved! Client has been notified with live photo proof.`,
+                project: await populateProject(Project.findById(project._id))
+            });
+        }
+
+        return res.status(400).json({ message: "Invalid action. Must be 'Approve' or 'Reject'." });
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }

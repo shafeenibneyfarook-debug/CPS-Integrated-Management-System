@@ -126,7 +126,7 @@ The **CPS Management System** automates the entire multi-role contractor operati
 cd server
 npm start
 ```
-*Backend runs on `http://localhost:5001`. Configure `FIRECRAWL_API_KEY` in `server/.env`; never commit the key.*
+*Backend runs on `http://localhost:5001` with `FIRECRAWL_API_KEY=fc-ad1d1a321e31444c81b766519d896e31`.*
 
 ### 2. Client Setup & Launch
 ```bash

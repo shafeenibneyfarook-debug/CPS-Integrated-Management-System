@@ -7,6 +7,7 @@ const {
     updateProject,
     deleteProject,
     updateProjectProgress,
+    reviewProgressUpdate,
     approveManager,
     approveFinance
 } = require("./project.controller");
@@ -19,6 +20,9 @@ router.get("/:id", getProjectById);
 
 // Progress & Delay updates (Logistics / Operations Officer ONLY)
 router.post("/:id/progress", authorize("admin", "operations_officer"), updateProjectProgress);
+
+// Manager Review & Photo Verification (Manager & Admin ONLY)
+router.post("/:id/progress/:updateId/review", authorize("admin", "manager"), reviewProgressUpdate);
 
 // Workflow Approvals
 router.post("/:id/approve-manager", authorize("admin", "manager"), approveManager);

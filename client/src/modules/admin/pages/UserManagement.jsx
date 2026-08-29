@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../../../api/axiosConfig";
 import { useAuth } from "../../auth/authStore";
+import formatError from "../../../utils/formatError";
 import "../../auth/auth.css";
 
 export default function UserManagement() {
@@ -11,8 +12,14 @@ export default function UserManagement() {
     useEffect(() => {
         let active = true;
         API.get("/admin/users")
-            .then(({ data }) => { if (active) setUsers(data); })
-            .catch((requestError) => { if (active) setError(requestError.response?.data?.message || "Unable to load users"); });
+            .then(({ data }) => {
+                if (active) {
+                    setUsers(Array.isArray(data) ? data : (Array.isArray(data?.users) ? data.users : []));
+                }
+            })
+            .catch((requestError) => {
+                if (active) setError(formatError(requestError, "Unable to load users"));
+            });
         return () => { active = false; };
     }, []);
 
@@ -22,7 +29,7 @@ export default function UserManagement() {
             const { data } = await API.patch(`/admin/users/${id}`, changes);
             setUsers((items) => items.map((item) => item._id === id ? data.user : item));
         } catch (requestError) {
-            setError(requestError.response?.data?.message || "Unable to update access");
+            setError(formatError(requestError, "Unable to update access"));
         }
     };
 
